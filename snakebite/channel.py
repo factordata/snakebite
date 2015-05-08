@@ -162,7 +162,7 @@ class SocketRpcChannel(RpcChannel):
     '''Socket implementation of an RpcChannel.
     '''
 
-    def __init__(self, host, port, version, effective_user=None):
+    def __init__(self, host, port, version, effective_user=None, protocol=None):
         '''SocketRpcChannel to connect to a socket server on a user defined port.
            It possible to define version and effective user for the communication.'''
         self.host = host
@@ -172,6 +172,7 @@ class SocketRpcChannel(RpcChannel):
         self.version = version
         self.client_id = str(uuid.uuid4())
         self.effective_user = effective_user or pwd.getpwuid(os.getuid())[0]
+        self.protocol = protocol or "org.apache.hadoop.hdfs.protocol.ClientProtocol"
 
     def validate_request(self, request):
         '''Validate the client request against the protocol file.'''
@@ -261,7 +262,7 @@ class SocketRpcChannel(RpcChannel):
         '''Creates and seriazlies a IpcConnectionContextProto (not delimited)'''
         context = IpcConnectionContextProto()
         context.userInfo.effectiveUser = self.effective_user
-        context.protocol = "org.apache.hadoop.hdfs.protocol.ClientProtocol"
+        context.protocol = self.protocol
 
         s_context = context.SerializeToString()
         log_protobuf_message("RequestContext (len: %d)" % len(s_context), context)
@@ -313,7 +314,7 @@ class SocketRpcChannel(RpcChannel):
     def create_request_header(self, method):
         header = RequestHeaderProto()
         header.methodName = method.name
-        header.declaringClassProtocolName = "org.apache.hadoop.hdfs.protocol.ClientProtocol"
+        header.declaringClassProtocolName = self.protocol
         header.clientProtocolVersion = 1
 
         s_header = header.SerializeToString()
