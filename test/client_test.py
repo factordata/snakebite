@@ -7,11 +7,12 @@ from mock import patch, Mock
 from snakebite.client import HAClient, AutoConfigClient, Client
 from snakebite.config import HDFSConfig
 from snakebite.namenode import Namenode
-from snakebite.errors import OutOfNNException, RequestError
+from snakebite.errors import OutOfNNException, RequestError, InvalidInputException
+
 
 class ClientTest(unittest2.TestCase):
-    original_hdfs_try_path = set(HDFSConfig.hdfs_try_paths)
-    original_core_try_path = set(HDFSConfig.core_try_paths)
+    original_hdfs_try_path = HDFSConfig.hdfs_try_paths
+    original_core_try_path = HDFSConfig.core_try_paths
 
     def setUp(self):
         # Make sure HDFSConfig is in vanilla state
@@ -61,7 +62,7 @@ class ClientTest(unittest2.TestCase):
 
     def test_empty_namenodes_haclient(self):
         namenodes = ()
-        self.assertRaises(OutOfNNException, HAClient, namenodes)
+        self.assertRaises(InvalidInputException, HAClient, namenodes)
 
     @patch('os.environ.get')
     def test_empty_namenodes_autoclient(self, environ_get):
@@ -69,4 +70,4 @@ class ClientTest(unittest2.TestCase):
         environ_get.return_value = False
         HDFSConfig.hdfs_try_paths = ()
         HDFSConfig.core_try_paths = ()
-        self.assertRaises(OutOfNNException, AutoConfigClient)
+        self.assertRaises(InvalidInputException, AutoConfigClient)

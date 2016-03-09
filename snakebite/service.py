@@ -19,14 +19,14 @@ import google.protobuf.service as service
 
 class RpcService(object):
 
-    def __init__(self, service_stub_class, port, host, hadoop_version, effective_user=None, protocol=None):
+    def __init__(self, service_stub_class, port, host, hadoop_version, effective_user=None,use_sasl=False, hdfs_namenode_principal=None, protocol=None):
         self.service_stub_class = service_stub_class
         self.port = port
         self.host = host
 
         # Setup the RPC channel
-        self.channel = SocketRpcChannel(host=self.host, port=self.port, version=hadoop_version,
-                                        effective_user=effective_user, protocol=protocol)
+        self.channel = SocketRpcChannel(host=self.host, port=self.port, version=hadoop_version, effective_user=effective_user, use_sasl=use_sasl,
+                                        hdfs_namenode_principal=hdfs_namenode_principal, protocol=protocol)
         self.service = self.service_stub_class(self.channel)
 
         # go through service_stub methods and add a wrapper function to
